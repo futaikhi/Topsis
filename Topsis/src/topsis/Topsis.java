@@ -6,27 +6,27 @@ import java.util.Arrays;
  * Topsis
  */
 public class Topsis {
-    HandPhone samsung = new HandPhone(3, 5, 3, "Samsung");
-    HandPhone iPhone = new HandPhone(4, 4, 5, "Iphone");
-    HandPhone xiaomi = new HandPhone(5, 3, 2, "Xiaomi");
-    HandPhone[] data = { samsung, iPhone, xiaomi };
-    int[] w = { 3, 2, 1 };
+    Data[] data;
+    int[] w;
 
-    // double[] findXn() {
-    // double[] xn = new double[3];
-    // double temp;
-    // double hasil = 0;
-    // for (int i = 0; i < 3; i++) {
-    // for (int j = 0; j < 3; j++) {
-    // temp = Math.pow(data[j][i], 2);
-    // hasil = hasil + temp;
-    // }
-    // xn[i] = Math.sqrt(hasil);
-    // hasil = 0;
-    // }
-    // return xn;
-    // }
     public Topsis() {
+        findXn();
+        findRi();
+        findYij();
+        findMin();
+        findMax();
+        diPlus();
+        diMin();
+        findVi();
+        sort();
+    }
+
+    public Topsis(int[] a, int[] b, int[] c, String[] nama, int[] w, int[] gambar) {
+        this.data = new Data[nama.length];
+        for (int i = 0; i < nama.length; i++) {
+            this.data[i] = new Data(a[i], b[i], c[i], nama[i], gambar[i]);
+        }
+        this.w = w;
         findXn();
         findRi();
         findYij();
@@ -41,9 +41,9 @@ public class Topsis {
     double[] findXn() {
         double[] xn = new double[3];
         for (int i = 0; i < data.length; i++) {
-            xn[0] = Math.pow(data[i].baterai, 2) + xn[0];
-            xn[1] = Math.pow(data[i].panelLayar, 2) + xn[1];
-            xn[2] = Math.pow(data[i].design, 2) + xn[2];
+            xn[0] = Math.pow(data[i].getA(), 2) + xn[0];
+            xn[1] = Math.pow(data[i].getB(), 2) + xn[1];
+            xn[2] = Math.pow(data[i].getC(), 2) + xn[2];
         }
         for (int i = 0; i < 3; i++) {
             xn[i] = Math.sqrt(xn[i]);
@@ -54,22 +54,32 @@ public class Topsis {
     }
 
     double[][] findRi() {
-        double[][] ri = new double[3][3];
-        for (int i = 0; i < 3; i++) {
+        double[][] ri = new double[data.length][3];
+        for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < 3; j++) {
-                ri[0][i] = data[i].baterai / findXn()[0];
-                ri[1][i] = data[i].panelLayar / findXn()[1];
-                ri[2][i] = data[i].design / findXn()[2];
+                ri[i][0] = data[i].getA() / findXn()[0];
+                ri[i][1] = data[i].getB() / findXn()[1];
+                ri[i][2] = data[i].getC() / findXn()[2];
             }
         }
         return ri;
     }
 
     double[][] findYij() {
-        double[][] yij = new double[3][3];
+        double[][] yij = new double[data.length][3];
         for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < data.length; j++) {
                 yij[j][i] = w[i] * findRi()[j][i];
+            }
+        }
+        return yij;
+    }
+
+    double[][] transformasiYij() {
+        double[][] yij = new double[3][data.length];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < data.length; j++) {
+                yij[i][j] = findYij()[j][i];
             }
         }
         return yij;
@@ -78,7 +88,7 @@ public class Topsis {
     double[] findMin() {
         double[] min = new double[3];
         for (int i = 0; i < 3; i++) {
-            min[i] = Arrays.stream(findYij()[i]).min().getAsDouble();
+            min[i] = Arrays.stream(transformasiYij()[i]).min().getAsDouble();
         }
         return min;
     }
@@ -86,18 +96,18 @@ public class Topsis {
     double[] findMax() {
         double[] max = new double[3];
         for (int i = 0; i < 3; i++) {
-            max[i] = Arrays.stream(findYij()[i]).max().getAsDouble();
+            max[i] = Arrays.stream(transformasiYij()[i]).max().getAsDouble();
         }
         return max;
     }
 
     double[] diPlus() {
-        double[] di = new double[3];
+        double[] di = new double[data.length];
         double temp = 0;
         double hasil = 0;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < 3; j++) {
-                temp = findMax()[j] - findYij()[j][i];
+                temp = findMax()[j] - transformasiYij()[j][i];
                 temp = Math.pow(temp, 2);
                 hasil = hasil + temp;
             }
@@ -109,12 +119,12 @@ public class Topsis {
     }
 
     double[] diMin() {
-        double[] di = new double[3];
+        double[] di = new double[data.length];
         double temp = 0;
         double hasil = 0;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < 3; j++) {
-                temp = findMin()[j] - findYij()[j][i];
+                temp = findMin()[j] - transformasiYij()[j][i];
                 temp = Math.pow(temp, 2);
                 hasil = hasil + temp;
             }
@@ -126,23 +136,23 @@ public class Topsis {
     }
 
     double[] findVi() {
-        double[] vi = new double[3];
-        for (int i = 0; i < 3; i++) {
+        double[] vi = new double[data.length];
+        for (int i = 0; i < data.length; i++) {
             vi[i] = diMin()[i] / (diMin()[i] + diPlus()[i]);
-            data[i].nilai = vi[i];
+            data[i].setNilai(vi[i]);
         }
         return vi;
     }
 
-    public HandPhone[] cetak() {
+    public Data[] cetak() {
         return data;
     }
 
     void sort() {
-        HandPhone temp;
+        Data temp;
         for (int i = 0; i < data.length; i++) {
             for (int j = 1; j < data.length - i; j++) {
-                if (data[j - 1].nilai < data[j].nilai) {
+                if (data[j - 1].getNilai() < data[j].getNilai()) {
                     temp = data[j - 1];
                     data[j - 1] = data[j];
                     data[j] = temp;
@@ -150,17 +160,5 @@ public class Topsis {
             }
         }
     }
-
-    // double[][] findRi() {
-    // double[][] ri = new double[3][3];
-    // double temp;
-    // for (int i = 0; i < 3; i++) {
-    // for (int j = 0; j < 3; j++) {
-    // temp = data[j][i] / findXn()[i];
-    // ri[i][j] = temp;
-    // }
-    // }
-    // return ri;
-    // }
 
 }
