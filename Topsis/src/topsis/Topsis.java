@@ -21,7 +21,7 @@ public class Topsis {
         sort();
     }
 
-    public Topsis(int[] a, int[] b, int[] c, String[] nama, int[] w, int[] gambar) {
+    public Topsis(int[] a, int[] b, int[] c, String[] nama, int[] w, String[] gambar) {
         this.data = new Data[nama.length];
         for (int i = 0; i < nama.length; i++) {
             this.data[i] = new Data(a[i], b[i], c[i], nama[i], gambar[i]);

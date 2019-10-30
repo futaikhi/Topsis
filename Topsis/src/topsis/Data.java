@@ -8,10 +8,10 @@ public class Data {
     private int a;
     private int b;
     private int c;
-    private int gambar;
+    private String gambar;
     private double nilai;
 
-    Data(int a, int b, int c, String d, int gambar) {
+    Data(int a, int b, int c, String d, String gambar) {
         this.a = a;
         this.b = b;
         this.c = c;
@@ -29,7 +29,7 @@ public class Data {
     /**
      * @return the gambar
      */
-    public int getGambar() {
+    public String getGambar() {
         return gambar;
     }
 
